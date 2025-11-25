@@ -1,11 +1,37 @@
-// This is what happens when I can't use TypeScript
+`use strict`
+// Monolithic file here I come!
 
+// This is what happens when I can't use TypeScript
 /**
  * @type { CanvasRenderingContext2D }
  */
-let game;
-
+let gameCanvas;
 let gameData;
+
+/**
+ * @type { number }
+ */
+let birdY = 325;
+
+/**
+ * @type { HTMLInputElement }
+ */
+let speedSlider;
+
+/**
+ * @type { HTMLSelectElement }
+ */
+let playerSpriteDropdown;
+
+/**
+ * @type { HTMLSelectElement }
+ */
+let backgroundDropdown;
+
+/**
+ * @type { HTMLSelectElement }
+ */
+let pipeDropdown;
 
 /** 
  * @param {MouseEvent} x
@@ -15,16 +41,15 @@ function onBtnUnfocus(x) {
 }
 
 function onLoad() {
-    console.log("Loaded!");
-    game = document.getElementById('gameCanvas').getContext('2d');
-    if(document.cookie === '') { 
-        const initialCookie = {
-            highScore: 0,
-            selectedSprite: "bird",
-            selectedBackground: "normal",
-        }
-        gameData = initialCookie;
-        document.cookie = JSON.stringify(initialCookie);
+    gameCanvas = document.getElementById('gameCanvas').getContext('2d');
+
+    speedSlider = document.getElementById('speedSlider');
+    playerSpriteDropdown = document.getElementById('playerSprite');
+    backgroundDropdown = document.getElementById('bgSprite');
+    pipeDropdown = document.getElementById('pipeSprite');
+
+    if (document.cookie === '') {
+        regenerateCookie()
     }
     else gameData = JSON.parse(document.cookie);
 
@@ -33,18 +58,125 @@ function onLoad() {
     document.getElementById('resetBtn').addEventListener('mouseup', (e) => onBtnUnfocus(e));
     document.getElementById('resetBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
 
+    speedSlider.addEventListener('change', (e) => {
+        const newValue = e.currentTarget.value;
+        console.log(newValue)
+        gameData.speed = newValue;
+        document.cookie = JSON.stringify(gameData);
+        document.getElementById('speedText').innerHTML = `${speed}x`;
+    });
+    playerSpriteDropdown.addEventListener('change', (e) => {
+        const newValue = e.currentTarget.value;
+        gameData.selectedSprite = newValue;
+        document.cookie = JSON.stringify(gameData);
+    });
+    backgroundDropdown.addEventListener('change', (e) => {
+        const newValue = e.currentTarget.value;
+        gameData.selectedBackground = newValue;
+        document.cookie = JSON.stringify(gameData);
+    });
+    pipeDropdown.addEventListener('change', (e) => {
+        const newValue = e.currentTarget.value;
+        gameData.selectedPipe = newValue;
+        document.cookie = JSON.stringify(gameData);
+    })
+
+    updateHighScoreTally();
+
+    gameCanvas.canvas.addEventListener('mousedown', () => {
+        birdY += 45; // change as needed during testing
+    });
+}
+
+
+function drawGame() {
+    let gameHighScore = 0;
+
+    const playerImg = new Image();
+    // According to the mozilla developer documentation, gifs work on the 2d canvas
+    playerImg.src = `../img/sprites/${gameData.selectedSprite}.gif`;
+
+    const backgroundImg = new Image();
+    backgroundImg.src = `../img/sprites/${gameData.selectedBackground}.png`;
+
+    const pipeImgTop = new Image();
+    pipeImgTop.src = `../img/sprites/${gameData.selectedPipe}-top.png`;
+
+    const pipeImgBottom = new Image();
+    pipeImgBottom.src = `../img/sprites/${gameData.selectedPipe}-bottom.png`;
+
+    const w = gameCanvas.canvas.width;
+    const h = gameCanvas.canvas.height;
+
+    let pipeX = w;
+    let pipeGap = 150;
+
+    const gravity = 2;
+
+    setInterval(() => {
+        // Clear Screen
+        gameCanvas.clearRect(0, 0, w, h);
+        // Draw background
+        gameCanvas.drawImage(backgroundImg, 0, 0, w, h);
+
+        // Draw Top Pipe
+        const pipeHeight = Math.floor(Math.random() * 250) + 50;
+        gameCanvas.drawImage(pipeImgTop, pipeX, pipeHeight - pipeImgTop.height);
+
+        // Draw Bottom Pipe
+        gameCanvas.drawImage(pipeImgBottom, pipeX, pipeHeight + pipeGap);
+
+        // Draw Player
+        gameCanvas.drawImage(playerImg, 50, birdY);
+
+        // Apply gravity
+        birdY += gravity;
+        // Move pipes toward player
+        pipeX -= gameData.speed * 2;
+    }, 1000 / (60 * gameData.speed));
+
+    // At this point, the player has crashed
+    // Clear screen, save high score and exit
+    gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
+    gameData.highScore = gameHighScore;
+    document.cookie = JSON.stringify(gameData);
+    updateHighScoreTally();
+}
+
+function gameLoop() {
+
+}
+
+function updateHighScoreTally() {
     document.getElementById('highScoreTally').innerHTML = `High Score: ${new Intl.NumberFormat().format(gameData.highScore)}`;
 }
 
-function drawMainMenu() {
+function regenerateCookie() {
+    const cookie = {
+        highScore: 0,
+        selectedSprite: "flappybird",
+        selectedBackground: "regularday",
+        selectedPipe: "regulargreen",
+        speed: 1.00
+    };
 
+    gameData = cookie;
+    document.cookie = JSON.stringify(cookie);
 }
 
-function drawGame() {
-
+function resetData() {
+    regenerateCookie();
+    location.reload();
 }
 
-function saveHighScore(newHs) {
-    gameData.highScore = newHs;
-    document.cookie = JSON.stringify(gameData); 
+function resetGame() {
+    // Pure genius
+    location.reload();
+}
+
+/**
+ * @returns { boolean }
+ */
+function hasCollided() {
+    // Implement collision checks (collided with pipe, collided with ceiling/ground (top/bottom of canvas respectively))
 }

@@ -27,3 +27,7 @@ body {
 .btn:focus {
     background-color: oklch(0.9103 0 267.35 / 52.21%);
 }
+
+btn:disabled {
+    background-color: gray;
+}
