@@ -116,10 +116,11 @@ function drawGame() {
     // Randomly generate coordinates then send to an array containing all pipe locations
     const pipeHeight = Math.floor(Math.random() * 250) + 50;
 
-
+    // TODO: implement some sort of loop to prevent the game from stopping
     setInterval(() => {
         // Clear Screen
         gameCanvas.clearRect(0, 0, w, h);
+
         // Draw background
         gameCanvas.drawImage(backgroundImg, 0, 0, w, h);
 
@@ -133,13 +134,18 @@ function drawGame() {
         gameCanvas.drawImage(playerImg, 50, birdY);
 
         // Apply gravity
-        birdY += gravity;
+        birdY += gravity; // TODO: instead of just subtracting height, implement something similar actual gravity
         // Move pipes toward player
         pipeX -= gameData.speed * 2;
-    }, 1000 / (60 * gameData.speed));
+
+        // Check if any collision has occured
+
+
+    }, 1000 / (60 * gameData.speed)); // at 1.00, game runs at 60 refreshes per second. slower or faster speeds can be dialed in by setting the game speed. For example, if you set the speed to 0.5, the game will now refresh at 30FPS
 
     // At this point, the player has crashed
     // Clear screen, save high score and exit
+    console.log("Crashed!");
     gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
     gameData.highScore = gameHighScore;
     document.cookie = JSON.stringify(gameData);
