@@ -84,7 +84,7 @@ function onLoad() {
     updateHighScoreTally();
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
-        birdY += 45; // change as needed during testing
+        birdY -= 45; // change as needed during testing
     });
 }
 
@@ -94,16 +94,16 @@ function drawGame() {
 
     const playerImg = new Image();
     // According to the mozilla developer documentation, gifs work on the 2d canvas
-    playerImg.src = `../img/sprites/${gameData.selectedSprite}.gif`;
+    playerImg.src = `../img/playerSprites/${gameData.selectedSprite}.gif`;
 
     const backgroundImg = new Image();
-    backgroundImg.src = `../img/sprites/${gameData.selectedBackground}.png`;
+    backgroundImg.src = `../img/backgrounds/${gameData.selectedBackground}.png`;
 
     const pipeImgTop = new Image();
-    pipeImgTop.src = `../img/sprites/${gameData.selectedPipe}-top.png`;
+    pipeImgTop.src = `../img/pipeSprites/${gameData.selectedPipe}-top.png`;
 
     const pipeImgBottom = new Image();
-    pipeImgBottom.src = `../img/sprites/${gameData.selectedPipe}-bottom.png`;
+    pipeImgBottom.src = `../img/pipeSprites/${gameData.selectedPipe}-bottom.png`;
 
     const w = gameCanvas.canvas.width;
     const h = gameCanvas.canvas.height;
@@ -113,6 +113,10 @@ function drawGame() {
 
     const gravity = 2;
 
+    // Randomly generate coordinates then send to an array containing all pipe locations
+    const pipeHeight = Math.floor(Math.random() * 250) + 50;
+
+
     setInterval(() => {
         // Clear Screen
         gameCanvas.clearRect(0, 0, w, h);
@@ -120,7 +124,6 @@ function drawGame() {
         gameCanvas.drawImage(backgroundImg, 0, 0, w, h);
 
         // Draw Top Pipe
-        const pipeHeight = Math.floor(Math.random() * 250) + 50;
         gameCanvas.drawImage(pipeImgTop, pipeX, pipeHeight - pipeImgTop.height);
 
         // Draw Bottom Pipe
@@ -141,10 +144,6 @@ function drawGame() {
     gameData.highScore = gameHighScore;
     document.cookie = JSON.stringify(gameData);
     updateHighScoreTally();
-}
-
-function gameLoop() {
-
 }
 
 function updateHighScoreTally() {
