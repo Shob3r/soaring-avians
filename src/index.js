@@ -34,9 +34,7 @@ const playerImg = new Image();
 
 const backgroundImg = new Image();
 
-const pipeImgTop = new Image();
-
-const pipeImgBottom = new Image();
+const pipeImg = new Image();
 
 let crashed = false;
 let playing = false;
@@ -102,8 +100,7 @@ function onLoad() {
 
     playerImg.src = `../img/playerSprites/${gameData.selectedSprite}.gif`;
     backgroundImg.src = `../img/backgrounds/${gameData.selectedBackground}.png`;
-    pipeImgTop.src = `../img/pipeSprites/${gameData.selectedPipe}-top.png`;
-    pipeImgBottom.src = `../img/pipeSprites/${gameData.selectedPipe}-bottom.png`;
+    pipeImg.src = `../img/pipeSprites/${gameData.selectedPipe}.png`;
 }
 
 function startGame() {
@@ -133,22 +130,11 @@ function renderGameFrame() {
     gameCanvas.drawImage(playerImg, 50, birdY);
 
     if (gameTime % 150 === 0) {
-        const pipeHeight = 320;
-        const topPipeMinHeight = 50;
-        const topPipeMaxHeight = gameCanvas.canvas.height - pipeGap - pipeHeight;
 
-        let topHeight = Math.floor(Math.random() * (topPipeMaxHeight - topPipeMinHeight + 1)) + topPipeMinHeight;
-        let bottomHeight = gameCanvas.canvas.height - (topHeight + pipeGap);
-        
-        if(bottomHeight > pipeHeight) {
-            bottomHeight = pipeHeight;
-            topHeight = gameCanvas.canvas.height - (pipeGap + bottomHeight)
-        }
 
         pipes.push({
             hPos: gameCanvas.canvas.width,
-            height: topHeight,
-            bottomHeight: bottomHeight,
+            height: Math.floor(Math.random() * 250) + 50,
             scoredPoint: false
         });
     }
@@ -156,8 +142,8 @@ function renderGameFrame() {
     for (let i = 0; i < pipes.length; i++) {
         const p = pipes[i];
 
-        gameCanvas.drawImage(pipeImgTop, p.hPos, p.height - pipeImgTop.height);
-        gameCanvas.drawImage(pipeImgBottom, p.hPos, gameCanvas.canvas.height - p.bottomHeight);
+        gameCanvas.drawImage(pipeImg, p.hPos, p.height - 640);
+        gameCanvas.drawImage(pipeImg, p.hPos, p.height + pipeGap);
     }
 
     // Apply gravity
