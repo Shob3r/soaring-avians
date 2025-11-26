@@ -143,7 +143,7 @@ function renderGameFrame() {
         cyclePlayerImg = playerUp;
     }
     else {
-        cyclePlayerImg = playerDown;
+        cyclePlayerImg = playerMiddle;
     }
 
     gameCanvas.drawImage(cyclePlayerImg, 50, birdY);
