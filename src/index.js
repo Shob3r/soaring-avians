@@ -184,7 +184,7 @@ function renderGameFrame() {
     // Only one pipe can be offscreen at any given time, so we do this after we move all the pipes
     if (pipes[0].hPos <= -50) {
         // Stop rendering pipes that are offscreen to save on memory
-        pipes.splice(i, 1);
+        pipes.splice(0, 1);
     }
 
     // Check if any collision has occured
