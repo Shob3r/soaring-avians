@@ -1,6 +1,8 @@
 // Monolithic file here I come!
 `use strict`
 
+// I use JSDoc comments on JavaScript because my IDE (Be it any JetBrains IDE, Visual Studio, or Visual Studio Code) gives me the functions associated with the type, which I genuinely cannot live without
+
 /**
  * @type { CanvasRenderingContext2D }
  */
@@ -45,7 +47,7 @@ const gravity = 2.5;
 let gameTime = 0;
 
 /** 
- * @param {MouseEvent} x
+ * @param {MouseEvent} x Button Event
  */
 function onBtnUnfocus(x) {
     x.currentTarget.blur();
@@ -59,7 +61,9 @@ function onLoad() {
     pipeDropdown = document.getElementById('pipeSprite');
     bgmPlayer = document.getElementById('bgmPlayer');
 
-    if (document.cookie === '') regenerateCookie()
+    if (document.cookie === '') {
+        regenerateCookie();
+    }
     else gameData = JSON.parse(document.cookie);
 
     playerSpriteDropdown.value = gameData.selectedSprite;
@@ -67,8 +71,9 @@ function onLoad() {
     pipeDropdown.value = gameData.selectedPipe;
 
     document.getElementById('playBtn').addEventListener('mouseup', (e) => onBtnUnfocus(e));
-    document.getElementById('playBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
     document.getElementById('resetBtn').addEventListener('mouseup', (e) => onBtnUnfocus(e));
+
+    document.getElementById('playBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
     document.getElementById('resetBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
 
 
@@ -85,7 +90,7 @@ function onLoad() {
         document.cookie = JSON.stringify(gameData);
         location.reload(); // Reload page to get latest data
     });
-    
+
     pipeDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedPipe = newValue;
@@ -96,7 +101,8 @@ function onLoad() {
     updateHighScoreTally();
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
-        birdY -= 40; // change as needed during testing
+        // After testing, I have determined that this is fair for each click
+        birdY -= 40;
         if (playing) playSoundEffect("audio_wing.wav");
     });
 
@@ -136,7 +142,7 @@ function renderGameFrame() {
     const frame = gameTime % 120; // 120 for 4 cycles, 30 frames apart
     if (frame < 30) {
         cyclePlayerImg = playerDown;
-    } 
+    }
     else if (frame < 60) {
         cyclePlayerImg = playerMiddle;
     }
@@ -157,6 +163,7 @@ function renderGameFrame() {
             scoredPoint: false
         });
     }
+
     // Generate a new random pipe
     for (let i = 0; i < pipes.length; i++) {
         const p = pipes[i];
@@ -173,11 +180,11 @@ function renderGameFrame() {
         pipes[i].hPos -= gameData.speed * 2;
 
     }
+
     // Only one pipe can be offscreen at any given time, so we do this after we move all the pipes
     if (pipes[0].hPos <= -50) {
         // Stop rendering pipes that are offscreen to save on memory
         pipes.splice(i, 1);
-        pipes.sort();
     }
 
     // Check if any collision has occured
@@ -189,7 +196,7 @@ function renderGameFrame() {
     const spriteBottom = birdY + 40; // Sprite is 40 pixels tall;  
 
     if (birdY <= 10 || birdY >= gameCanvas.canvas.height - 50) {
-        // Game over
+        // Player hit either the top or the bottom of the screen. Checks for pipe collisions are done below
         crashed = true;
     }
 
@@ -212,6 +219,7 @@ function renderGameFrame() {
         if (!p.scoredPoint && spriteRight > pipeLeft + 26) {
             p.scoredPoint = true;
             gameScore += 150;
+
             document.getElementById("currentScoreTally").innerHTML = `Score: ${gameScore}`;
             playSoundEffect("audio_point.wav");
         }
@@ -225,10 +233,12 @@ function endGame() {
     playing = false
     playSoundEffect("audio_die.wav");
     alert(`You Crashed! Your high score: ${Math.round(gameScore)}`);
+
     gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
     gameData.highScore = Math.round(gameScore);
     document.cookie = JSON.stringify(gameData);
     pipes.splice(0, pipes.length); // Remove all indicies in the pipe array to prevent them from re-rendering in scenarios where multiple playthroughs are done in one session
+
     document.getElementById("currentScoreTally").innerHTML = 'Score: 0';
     updateHighScoreTally();
 }
@@ -269,8 +279,10 @@ function playSoundEffect(audioName) {
     const audio = document.createElement('audio');
     audio.src = `../audio/${audioName}`;
     audio.autoplay = true;
+
     // Make the audio player invisible
     audio.style.display = 'none';
+
     // Add audio player to the body
     document.body.appendChild(audio);
 
