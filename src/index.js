@@ -132,14 +132,14 @@ function renderGameFrame() {
     gameCanvas.drawImage(backgroundImg, 0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
 
     let cyclePlayerImg;
-    const frame = gameTime % 170; // 240 for 4 cycles, 60 frames apart
+    const frame = gameTime % 120; // 120 for 4 cycles, 30 frames apart
     if(frame < 30) {
         cyclePlayerImg = playerDown;
     }
     else if(frame < 60) {
         cyclePlayerImg = playerMiddle;
     }
-    else if(frame < 85) {
+    else if(frame < 90) {
         cyclePlayerImg = playerUp;
     }
     else {
