@@ -6,17 +6,13 @@
  * @type { CanvasRenderingContext2D }
  */
 let gameCanvas;
+
 let gameData;
 
 /**
  * @type { number }
  */
 let birdY = 325;
-
-/**
- * @type { HTMLInputElement }
- */
-let speedSlider;
 
 /**
  * @type { HTMLSelectElement }
@@ -43,11 +39,12 @@ const pipeImgTop = new Image();
 const pipeImgBottom = new Image();
 
 let crashed = false;
-let gameHighScore = 0;
+let playing = false;
+let gameScore = 0;
 
 
 const pipes = [];
-const pipeGap = 150;
+const pipeGap = 120;
 const gravity = 2.5;
 let gameTime = 0;
 
@@ -61,15 +58,14 @@ function onBtnUnfocus(x) {
 function onLoad() {
     gameCanvas = document.getElementById('gameCanvas').getContext('2d');
 
-    speedSlider = document.getElementById('speedSlider');
     playerSpriteDropdown = document.getElementById('playerSprite');
     backgroundDropdown = document.getElementById('bgSprite');
     pipeDropdown = document.getElementById('pipeSprite');
+    bgmPlayer = document.getElementById('bgmPlayer');
 
     if (document.cookie === '') regenerateCookie()
     else gameData = JSON.parse(document.cookie);
 
-    speedSlider.value = gameData.speed;
     playerSpriteDropdown.value = gameData.selectedSprite;
     backgroundDropdown.value = gameData.selectedBackground;
     pipeDropdown.value = gameData.selectedPipe;
@@ -79,13 +75,7 @@ function onLoad() {
     document.getElementById('resetBtn').addEventListener('mouseup', (e) => onBtnUnfocus(e));
     document.getElementById('resetBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
 
-    speedSlider.addEventListener('change', (e) => {
-        const newValue = e.currentTarget.value;
-        console.log(newValue)
-        gameData.speed = newValue;
-        document.cookie = JSON.stringify(gameData);
-        document.getElementById('speedText').innerHTML = `${speed}x`;
-    });
+
     playerSpriteDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedSprite = newValue;
@@ -106,7 +96,7 @@ function onLoad() {
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
         birdY -= 45; // change as needed during testing
-        playSoundEffect("audio_wing.wav");
+        if (playing) playSoundEffect("audio_wing.wav");
     });
 
 
@@ -117,17 +107,19 @@ function onLoad() {
 }
 
 function startGame() {
-    gameHighScore = 0;
+    if (playing) return; // A game is already in progress
+    gameScore = 0;
     gameTime = 0;
     crashed = false;
+    playing = true;
     birdY = gameCanvas.canvas.height / 2;
 
-    requestAnimationFrame(renderGameFrame)
+    requestAnimationFrame(renderGameFrame);
 }
 
 function renderGameFrame() {
     if (crashed) {
-        requestAnimationFrame(endGame)
+        requestAnimationFrame(endGame);
         return;
     }
 
@@ -141,15 +133,31 @@ function renderGameFrame() {
     gameCanvas.drawImage(playerImg, 50, birdY);
 
     if (gameTime % 150 === 0) {
+        const pipeHeight = 320;
+        const topPipeMinHeight = 50;
+        const topPipeMaxHeight = gameCanvas.canvas.height - pipeGap - pipeHeight;
+
+        let topHeight = Math.floor(Math.random() * (topPipeMaxHeight - topPipeMinHeight + 1)) + topPipeMinHeight;
+        let bottomHeight = gameCanvas.canvas.height - (topHeight + pipeGap);
+        
+        if(bottomHeight > pipeHeight) {
+            bottomHeight = pipeHeight;
+            topHeight = gameCanvas.canvas.height - (pipeGap + bottomHeight)
+        }
+
         pipes.push({
             hPos: gameCanvas.canvas.width,
-            height: Math.floor(Math.random() * 250) + 50,
+            height: topHeight,
+            bottomHeight: bottomHeight,
+            scoredPoint: false
         });
     }
     // Generate a new random pipe
     for (let i = 0; i < pipes.length; i++) {
-        gameCanvas.drawImage(pipeImgTop, pipes[i].hPos, pipes[i].height - pipeImgTop.height);
-        gameCanvas.drawImage(pipeImgBottom, pipes[i].hPos, pipes[i].height + pipeGap)
+        const p = pipes[i];
+
+        gameCanvas.drawImage(pipeImgTop, p.hPos, p.height - pipeImgTop.height);
+        gameCanvas.drawImage(pipeImgBottom, p.hPos, gameCanvas.canvas.height - p.bottomHeight);
     }
 
     // Apply gravity
@@ -166,26 +174,53 @@ function renderGameFrame() {
     }
 
     // Check if any collision has occured
+    // These are the bounds of the player sprite
+    const spriteLeft = 50; // Always starts 50px off from the left
+    const spriteRight = 104; // Sprite is 54 pixels long. I can directly assign a value here because the x coordinates don't change
+
+    const spriteTop = birdY; // Top of the bird
+    const spriteBottom = birdY + 40 // Sprite is 40 pixels tall;  
+
     if (birdY <= 10 || birdY >= gameCanvas.canvas.height - 50) {
         // Game over
-        crashed = true
-    };
-    gameHighScore += 0.1;
-    if(gameTime % 60 / gameData.speed === 0) {
-        gameHighScore += 10;
+        crashed = true;
     }
+
+    // Computationally expensive and unecessary to check all pipes when only one pipe can be colliding with the player at any given time, so we reference index 0
+    const pipeLeft = pipes[0].hPos; // Left-hand side of a pipe
+    const pipeRight = pipes[0].hPos + 52; // Width of a pipe is 52 pixels
+
+    // "Safe" y-coordinates to be between when x coordinates overlap with a pipe 
+    const gapTop = pipes[0].height;
+    const gapBottom = pipes[0].height + pipeGap;
+
+    if (spriteRight > pipeLeft && spriteLeft < pipeRight) {
+        if (spriteTop < gapTop || spriteBottom > gapBottom) {
+            crashed = true;
+        }
+    }
+    else {
+        if(!pipes[0].scoredPoint && spriteRight > pipeLeft + 26) {
+            pipes[0].scoredPoint = true
+            gameScore += 150;
+            document.getElementById("currentScoreTally").innerHTML = `Score: ${gameScore}`
+            playSoundEffect("audio_point.wav");
+        }
+    }
+
     gameTime += 1;
     requestAnimationFrame(renderGameFrame);
 }
 
 function endGame() {
-    console.log("Crashed!");
+    playing = false
     playSoundEffect("audio_die.wav");
-    alert(`You Crashed! Your high score: ${Math.round(gameHighScore)}`);
+    alert(`You Crashed! Your high score: ${Math.round(gameScore)}`);
     gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
-    gameData.highScore = Math.round(gameHighScore);
+    gameData.highScore = Math.round(gameScore);
     document.cookie = JSON.stringify(gameData);
     pipes.splice(0, pipes.length); // Remove all indicies in the pipe array to prevent them from re-rendering in scenarios where multiple playthroughs are done in one session
+    document.getElementById("currentScoreTally").innerHTML = 'Score: 0'
     updateHighScoreTally();
 }
 
@@ -196,7 +231,7 @@ function updateHighScoreTally() {
 function regenerateCookie() {
     const cookie = {
         highScore: 0,
-        selectedSprite: "flappybird",
+        selectedSprite: "yellowbird",
         selectedBackground: "regularday",
         selectedPipe: "regulargreen",
         speed: 1.00
@@ -228,7 +263,7 @@ function playSoundEffect(audioName) {
     // Make the audio player invisible
     audio.style.display = 'none'
     // Add audio player to the body
-    document.body.appendChild(audio)
+    document.body.appendChild(audio);
 
     // Remove audio element after completed
     audio.addEventListener('ended', () => {

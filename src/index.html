@@ -15,6 +15,7 @@
         <h1>Soaring Avians</h1>
         <button onclick="resetData()">Reset Data</button>
         <h3 id="highScoreTally">High Score: None</h3>
+        <h3 id="currentScoreTally">Score: 0</h3>
         <canvas id="gameCanvas" width="1050" height="650"
             style="background-color: oklch(1 0 0 / 5%); margin-bottom: 5px; border-radius: 1.5rem;"></canvas>
         <div>
@@ -23,38 +24,34 @@
         </div>
     </div>
     <!--Configuration Options-->
-    <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center;">
+    <div style="display: flex; flex-direction: column; justify-content: center; text-align: center; margin-bottom: 50px;">
         <h2>Configuration Options</h2>
-        <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center;">
-            <h3><u>Player Sprite</u></h3>
-            <select id="playerSprite">
-                <option>yellowbird</option>
-                <option>bluebird</option>
-                <option>redbird</option>
-            </select>
-        </div>
-        <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center;">
-            <h3><u>Background</u></h3>
-            <select id="bgSprite">
-                <option>regularday</option>
-                <option>regularnight</option>
-            </select>
-        </div>
-        <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center;">
-            <h3><u>Pipe Sprite</u></h3>
-            <select id="pipeSprite">
-                <option>regulargreen</option>
-                <option>regularorange</option>
-            </select>
-        </div>
-        <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center;">
-            <h3><u>Speed</u></h3>
-            <div style="flex: auto auto; flex-direction: row;">
-                <input placeholder="1.00" type="range" min="0.5" max="2.0" step="0.1" id="speedSlider">
-                <p id="speedText">1.0x</p>
+        <div style="display: flex; flex-direction: row; justify-content: center; gap: 40px;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <h3><u>Player Sprite</u></h3>
+                <select id="playerSprite">
+                    <option>yellowbird</option>
+                    <option>bluebird</option>
+                    <option>redbird</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <h3><u>Background</u></h3>
+                <select id="bgSprite">
+                    <option>regularday</option>
+                    <option>regularnight</option>
+                </select>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <h3><u>Pipe Sprite</u></h3>
+                <select id="pipeSprite">
+                    <option>regulargreen</option>
+                    <option>regularorange</option>
+                </select>
             </div>
         </div>
     </div>
+    <audio src="../audio/bgm.mp3" hidden loop id="bgmPlayer"></audio>
 </body>
 
 </html>
