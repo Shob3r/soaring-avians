@@ -131,10 +131,10 @@ function renderGameFrame() {
 
     if (gameTime % 150 === 0) {
 
-
+        // This is a mish-mash of legacy code and fresh code. It just works
         pipes.push({
             hPos: gameCanvas.canvas.width,
-            height: Math.floor(Math.random() * 250) + 50,
+            height: Math.floor(Math.random() * (gameCanvas.canvas.height - pipeGap - 100)) + 50, 
             scoredPoint: false
         });
     }
