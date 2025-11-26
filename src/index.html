@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +9,16 @@
     <link rel="icon" type="image/x-icon" href="../favicon.svg">
     <script src="./index.js" defer></script>
 </head>
+
 <body onload="onLoad()">
     <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center; margin-bottom: 15px;">
         <h1>Soaring Avians</h1>
         <button onclick="resetData()">Reset Data</button>
         <h3 id="highScoreTally">High Score: None</h3>
-        <canvas id="gameCanvas" width="1050" height="650" style="background-color: white; margin-bottom: 5px"></canvas>
+        <canvas id="gameCanvas" width="1050" height="650"
+            style="background-color: oklch(1 0 0 / 5%); margin-bottom: 5px; border-radius: 1.5rem;"></canvas>
         <div>
-            <button id="playBtn" class="btn" onclick="drawGame()">Play</button>
+            <button id="playBtn" class="btn" onclick="startGame()">Play</button>
             <button id="resetBtn" class="btn" onclick="resetGame()">Reset</button>
         </div>
     </div>
@@ -53,4 +56,5 @@
         </div>
     </div>
 </body>
+
 </html>

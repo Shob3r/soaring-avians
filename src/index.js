@@ -33,6 +33,24 @@ let backgroundDropdown;
  */
 let pipeDropdown;
 
+const playerImg = new Image();
+// According to the mozilla developer documentation, gifs work on the 2d canvas
+
+const backgroundImg = new Image();
+
+const pipeImgTop = new Image();
+
+const pipeImgBottom = new Image();
+
+let crashed = false;
+let gameHighScore = 0;
+
+
+const pipes = [];
+const pipeGap = 150;
+const gravity = 2.5;
+let gameTime = 0;
+
 /** 
  * @param {MouseEvent} x
  */
@@ -48,10 +66,13 @@ function onLoad() {
     backgroundDropdown = document.getElementById('bgSprite');
     pipeDropdown = document.getElementById('pipeSprite');
 
-    if (document.cookie === '') {
-        regenerateCookie()
-    }
+    if (document.cookie === '') regenerateCookie()
     else gameData = JSON.parse(document.cookie);
+
+    speedSlider.value = gameData.speed;
+    playerSpriteDropdown.value = gameData.selectedSprite;
+    backgroundDropdown.value = gameData.selectedBackground;
+    pipeDropdown.value = gameData.selectedPipe;
 
     document.getElementById('playBtn').addEventListener('mouseup', (e) => onBtnUnfocus(e));
     document.getElementById('playBtn').addEventListener('mouseleave', (e) => onBtnUnfocus(e));
@@ -85,70 +106,86 @@ function onLoad() {
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
         birdY -= 45; // change as needed during testing
+        playSoundEffect("audio_wing.wav");
     });
+
+
+    playerImg.src = `../img/playerSprites/${gameData.selectedSprite}.gif`;
+    backgroundImg.src = `../img/backgrounds/${gameData.selectedBackground}.png`;
+    pipeImgTop.src = `../img/pipeSprites/${gameData.selectedPipe}-top.png`;
+    pipeImgBottom.src = `../img/pipeSprites/${gameData.selectedPipe}-bottom.png`;
 }
 
+function startGame() {
+    gameHighScore = 0;
+    gameTime = 0;
+    crashed = false;
+    birdY = gameCanvas.canvas.height / 2;
 
-function drawGame() {
-    let gameHighScore = 0;
+    requestAnimationFrame(renderGameFrame)
+}
 
-    const playerImg = new Image();
-    // According to the mozilla developer documentation, gifs work on the 2d canvas
-    playerImg.src = `../img/playerSprites/${gameData.selectedSprite}.gif`;
+function renderGameFrame() {
+    if (crashed) {
+        requestAnimationFrame(endGame)
+        return;
+    }
 
-    const backgroundImg = new Image();
-    backgroundImg.src = `../img/backgrounds/${gameData.selectedBackground}.png`;
-
-    const pipeImgTop = new Image();
-    pipeImgTop.src = `../img/pipeSprites/${gameData.selectedPipe}-top.png`;
-
-    const pipeImgBottom = new Image();
-    pipeImgBottom.src = `../img/pipeSprites/${gameData.selectedPipe}-bottom.png`;
-
-    const w = gameCanvas.canvas.width;
-    const h = gameCanvas.canvas.height;
-
-    let pipeX = w;
-    let pipeGap = 150;
-
-    const gravity = 2;
-
-    // Randomly generate coordinates then send to an array containing all pipe locations
-    const pipeHeight = Math.floor(Math.random() * 250) + 50;
-
-    // TODO: implement some sort of loop to prevent the game from stopping
-    setInterval(() => {
-        // Clear Screen
-        gameCanvas.clearRect(0, 0, w, h);
-
-        // Draw background
-        gameCanvas.drawImage(backgroundImg, 0, 0, w, h);
-
-        // Draw Top Pipe
-        gameCanvas.drawImage(pipeImgTop, pipeX, pipeHeight - pipeImgTop.height);
-
-        // Draw Bottom Pipe
-        gameCanvas.drawImage(pipeImgBottom, pipeX, pipeHeight + pipeGap);
-
-        // Draw Player
-        gameCanvas.drawImage(playerImg, 50, birdY);
-
-        // Apply gravity
-        birdY += gravity; // TODO: instead of just subtracting height, implement something similar actual gravity
-        // Move pipes toward player
-        pipeX -= gameData.speed * 2;
-
-        // Check if any collision has occured
-
-
-    }, 1000 / (60 * gameData.speed)); // at 1.00, game runs at 60 refreshes per second. slower or faster speeds can be dialed in by setting the game speed. For example, if you set the speed to 0.5, the game will now refresh at 30FPS
-
-    // At this point, the player has crashed
-    // Clear screen, save high score and exit
-    console.log("Crashed!");
+    // Clear Screen
     gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
-    gameData.highScore = gameHighScore;
+
+    // Draw background
+    gameCanvas.drawImage(backgroundImg, 0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
+
+    // Draw Player
+    gameCanvas.drawImage(playerImg, 50, birdY);
+
+    if (gameTime % 150 === 0) {
+        pipes.push({
+            hPos: gameCanvas.canvas.width,
+            height: Math.floor(Math.random() * 250) + 50,
+        });
+    }
+    // Generate a new random pipe
+    for (let i = 0; i < pipes.length; i++) {
+        gameCanvas.drawImage(pipeImgTop, pipes[i].hPos, pipes[i].height - pipeImgTop.height);
+        gameCanvas.drawImage(pipeImgBottom, pipes[i].hPos, pipes[i].height + pipeGap)
+    }
+
+    // Apply gravity
+    birdY += gravity;
+
+    // Move pipes toward player
+    for (let i = 0; i < pipes.length; i++) {
+        pipes[i].hPos -= gameData.speed * 2;
+        if (pipes[i].hPos <= -50) {
+            // Stop rendering pipes that are offscreen to save on memory
+            pipes.splice(i, 1);
+            pipes.sort();
+        }
+    }
+
+    // Check if any collision has occured
+    if (birdY <= 10 || birdY >= gameCanvas.canvas.height - 50) {
+        // Game over
+        crashed = true
+    };
+    gameHighScore += 0.1;
+    if(gameTime % 60 / gameData.speed === 0) {
+        gameHighScore += 10;
+    }
+    gameTime += 1;
+    requestAnimationFrame(renderGameFrame);
+}
+
+function endGame() {
+    console.log("Crashed!");
+    playSoundEffect("audio_die.wav");
+    alert(`You Crashed! Your high score: ${Math.round(gameHighScore)}`);
+    gameCanvas.clearRect(0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
+    gameData.highScore = Math.round(gameHighScore);
     document.cookie = JSON.stringify(gameData);
+    pipes.splice(0, pipes.length); // Remove all indicies in the pipe array to prevent them from re-rendering in scenarios where multiple playthroughs are done in one session
     updateHighScoreTally();
 }
 
@@ -180,8 +217,27 @@ function resetGame() {
 }
 
 /**
- * @returns { boolean }
+ * @param {string} audioName a file in the audio folder. If it doesn't exist, the script will do nothing. Include file extension
  */
-function hasCollided() {
-    // Implement collision checks (collided with pipe, collided with ceiling/ground (top/bottom of canvas respectively))
+function playSoundEffect(audioName) {
+    // This is a much better alternative to a singular <audio> element on the html page at any time, which could cause issues with multiple sound effects
+    // In this implementation, there can be a virtually unlimited amount of sound effects playing at the same time
+    const audio = document.createElement('audio');
+    audio.src = `../audio/${audioName}`;
+    audio.autoplay = true;
+    // Make the audio player invisible
+    audio.style.display = 'none'
+    // Add audio player to the body
+    document.body.appendChild(audio)
+
+    // Remove audio element after completed
+    audio.addEventListener('ended', () => {
+        audio.remove();
+    });
+
+    audio.play().catch((e) => {
+        // Whatever the case, just don't play the sound effect;
+        console.warn(`${audioName} failed to play: ${e}`)
+        return;
+    })
 }
