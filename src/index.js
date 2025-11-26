@@ -29,7 +29,10 @@ let backgroundDropdown;
  */
 let pipeDropdown;
 
-const playerImg = new Image();
+const playerDown = new Image();
+const playerUp = new Image();
+const playerMiddle = new Image();
+
 const backgroundImg = new Image();
 const pipeImg = new Image();
 
@@ -75,27 +78,32 @@ function onLoad() {
         const newValue = e.currentTarget.value;
         gameData.selectedSprite = newValue;
         document.cookie = JSON.stringify(gameData);
+        location.reload // Reload page to get latest data
     });
     backgroundDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedBackground = newValue;
         document.cookie = JSON.stringify(gameData);
+        location.reload // Reload page to get latest data
     });
     pipeDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedPipe = newValue;
         document.cookie = JSON.stringify(gameData);
+        location.reload // Reload page to get latest data
     })
 
     updateHighScoreTally();
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
-        birdY -= 30; // change as needed during testing
+        birdY -= 40; // change as needed during testing
         if (playing) playSoundEffect("audio_wing.wav");
     });
 
+    playerUp.src = `../img/playerSprites/${gameData.selectedSprite}-up.png`
+    playerMiddle.src = `../img/playerSprites/${gameData.selectedSprite}-middle.png`;
+    playerDown.src = `../img/playerSprites/${gameData.selectedSprite}-down.png`
 
-    playerImg.src = `../img/playerSprites/${gameData.selectedSprite}.gif`;
     backgroundImg.src = `../img/backgrounds/${gameData.selectedBackground}.png`;
     pipeImg.src = `../img/pipeSprites/${gameData.selectedPipe}.png`;
 }
@@ -123,8 +131,22 @@ function renderGameFrame() {
     // Draw background
     gameCanvas.drawImage(backgroundImg, 0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
 
-    // Draw Player
-    gameCanvas.drawImage(playerImg, 50, birdY);
+    let cyclePlayerImg;
+    const frame = gameTime % 170; // 240 for 4 cycles, 60 frames apart
+    if(frame < 30) {
+        cyclePlayerImg = playerDown;
+    }
+    else if(frame < 60) {
+        cyclePlayerImg = playerMiddle;
+    }
+    else if(frame < 85) {
+        cyclePlayerImg = playerUp;
+    }
+    else {
+        cyclePlayerImg = playerDown;
+    }
+
+    gameCanvas.drawImage(cyclePlayerImg, 50, birdY);
 
     if (gameTime % 150 === 0) {
 
