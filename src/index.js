@@ -1,7 +1,6 @@
-`use strict`
 // Monolithic file here I come!
+`use strict`
 
-// This is what happens when I can't use TypeScript
 /**
  * @type { CanvasRenderingContext2D }
  */
@@ -40,7 +39,6 @@ let crashed = false;
 let playing = false;
 let gameScore = 0;
 
-
 const pipes = [];
 const pipeGap = 120;
 const gravity = 2.5;
@@ -78,20 +76,22 @@ function onLoad() {
         const newValue = e.currentTarget.value;
         gameData.selectedSprite = newValue;
         document.cookie = JSON.stringify(gameData);
-        location.reload // Reload page to get latest data
+        location.reload(); // Reload page to get latest data
     });
+
     backgroundDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedBackground = newValue;
         document.cookie = JSON.stringify(gameData);
-        location.reload // Reload page to get latest data
+        location.reload(); // Reload page to get latest data
     });
+    
     pipeDropdown.addEventListener('change', (e) => {
         const newValue = e.currentTarget.value;
         gameData.selectedPipe = newValue;
         document.cookie = JSON.stringify(gameData);
-        location.reload // Reload page to get latest data
-    })
+        location.reload(); // Reload page to get latest data
+    });
 
     updateHighScoreTally();
 
@@ -100,7 +100,7 @@ function onLoad() {
         if (playing) playSoundEffect("audio_wing.wav");
     });
 
-    playerUp.src = `../img/playerSprites/${gameData.selectedSprite}-up.png`
+    playerUp.src = `../img/playerSprites/${gameData.selectedSprite}-up.png`;
     playerMiddle.src = `../img/playerSprites/${gameData.selectedSprite}-middle.png`;
     playerDown.src = `../img/playerSprites/${gameData.selectedSprite}-down.png`
 
@@ -131,15 +131,16 @@ function renderGameFrame() {
     // Draw background
     gameCanvas.drawImage(backgroundImg, 0, 0, gameCanvas.canvas.width, gameCanvas.canvas.height);
 
+    // This is by far the MOST CURSED way to render an animated sprite. I could have used a sprite sheet, but I didn't want to make one, and I decided to challenge myself to implement it differently. It works in my case, but probably not in others
     let cyclePlayerImg;
     const frame = gameTime % 120; // 120 for 4 cycles, 30 frames apart
-    if(frame < 30) {
+    if (frame < 30) {
         cyclePlayerImg = playerDown;
-    }
-    else if(frame < 60) {
+    } 
+    else if (frame < 60) {
         cyclePlayerImg = playerMiddle;
     }
-    else if(frame < 90) {
+    else if (frame < 90) {
         cyclePlayerImg = playerUp;
     }
     else {
@@ -149,7 +150,6 @@ function renderGameFrame() {
     gameCanvas.drawImage(cyclePlayerImg, 50, birdY);
 
     if (gameTime % 150 === 0) {
-
         // This is a mish-mash of legacy code and fresh code. It just works
         pipes.push({
             hPos: gameCanvas.canvas.width,
@@ -171,11 +171,13 @@ function renderGameFrame() {
     // Move pipes toward player
     for (let i = 0; i < pipes.length; i++) {
         pipes[i].hPos -= gameData.speed * 2;
-        if (pipes[i].hPos <= -50) {
-            // Stop rendering pipes that are offscreen to save on memory
-            pipes.splice(i, 1);
-            pipes.sort();
-        }
+
+    }
+    // Only one pipe can be offscreen at any given time, so we do this after we move all the pipes
+    if (pipes[0].hPos <= -50) {
+        // Stop rendering pipes that are offscreen to save on memory
+        pipes.splice(i, 1);
+        pipes.sort();
     }
 
     // Check if any collision has occured
@@ -184,20 +186,22 @@ function renderGameFrame() {
     const spriteRight = 104; // Sprite is 54 pixels long. I can directly assign a value here because the x coordinates don't change
 
     const spriteTop = birdY; // Top of the bird
-    const spriteBottom = birdY + 40 // Sprite is 40 pixels tall;  
+    const spriteBottom = birdY + 40; // Sprite is 40 pixels tall;  
 
     if (birdY <= 10 || birdY >= gameCanvas.canvas.height - 50) {
         // Game over
         crashed = true;
     }
 
-    // Computationally expensive and unecessary to check all pipes when only one pipe can be colliding with the player at any given time, so we reference index 0
-    const pipeLeft = pipes[0].hPos; // Left-hand side of a pipe
-    const pipeRight = pipes[0].hPos + 52; // Width of a pipe is 52 pixels
+    // It is computationally expensive and unecessary to check all pipes, as only one pipe can be colliding with the player at any given time, so we will hardcode a reference to index 0 of the pipes array
+    const p = pipes[0];
+
+    const pipeLeft = p.hPos; // Left-hand side of a pipe
+    const pipeRight = p.hPos + 52; // Width of a pipe is 52 pixels
 
     // "Safe" y-coordinates to be between when x coordinates overlap with a pipe 
-    const gapTop = pipes[0].height;
-    const gapBottom = pipes[0].height + pipeGap;
+    const gapTop = p.height;
+    const gapBottom = p.height + pipeGap;
 
     if (spriteRight > pipeLeft && spriteLeft < pipeRight) {
         if (spriteTop < gapTop || spriteBottom > gapBottom) {
@@ -205,10 +209,10 @@ function renderGameFrame() {
         }
     }
     else {
-        if(!pipes[0].scoredPoint && spriteRight > pipeLeft + 26) {
-            pipes[0].scoredPoint = true
+        if (!p.scoredPoint && spriteRight > pipeLeft + 26) {
+            p.scoredPoint = true;
             gameScore += 150;
-            document.getElementById("currentScoreTally").innerHTML = `Score: ${gameScore}`
+            document.getElementById("currentScoreTally").innerHTML = `Score: ${gameScore}`;
             playSoundEffect("audio_point.wav");
         }
     }
@@ -225,7 +229,7 @@ function endGame() {
     gameData.highScore = Math.round(gameScore);
     document.cookie = JSON.stringify(gameData);
     pipes.splice(0, pipes.length); // Remove all indicies in the pipe array to prevent them from re-rendering in scenarios where multiple playthroughs are done in one session
-    document.getElementById("currentScoreTally").innerHTML = 'Score: 0'
+    document.getElementById("currentScoreTally").innerHTML = 'Score: 0';
     updateHighScoreTally();
 }
 
@@ -266,7 +270,7 @@ function playSoundEffect(audioName) {
     audio.src = `../audio/${audioName}`;
     audio.autoplay = true;
     // Make the audio player invisible
-    audio.style.display = 'none'
+    audio.style.display = 'none';
     // Add audio player to the body
     document.body.appendChild(audio);
 
@@ -276,8 +280,8 @@ function playSoundEffect(audioName) {
     });
 
     audio.play().catch((e) => {
-        // Whatever the case, just don't play the sound effect;
+        // Whatever the reason behind the error, just don't play the sound effect;
         console.warn(`${audioName} failed to play: ${e}`)
         return;
-    })
+    });
 }
