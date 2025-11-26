@@ -30,10 +30,7 @@ let backgroundDropdown;
 let pipeDropdown;
 
 const playerImg = new Image();
-// According to the mozilla developer documentation, gifs work on the 2d canvas
-
 const backgroundImg = new Image();
-
 const pipeImg = new Image();
 
 let crashed = false;
@@ -93,7 +90,7 @@ function onLoad() {
     updateHighScoreTally();
 
     gameCanvas.canvas.addEventListener('mousedown', () => {
-        birdY -= 45; // change as needed during testing
+        birdY -= 30; // change as needed during testing
         if (playing) playSoundEffect("audio_wing.wav");
     });
 
@@ -134,7 +131,7 @@ function renderGameFrame() {
         // This is a mish-mash of legacy code and fresh code. It just works
         pipes.push({
             hPos: gameCanvas.canvas.width,
-            height: Math.floor(Math.random() * (gameCanvas.canvas.height - pipeGap - 100)) + 50, 
+            height: Math.floor(Math.random() * (gameCanvas.canvas.height - pipeGap - 100)) + 50, // min 100 up for bottom pipe, min 50 down for top pipe
             scoredPoint: false
         });
     }
@@ -142,7 +139,7 @@ function renderGameFrame() {
     for (let i = 0; i < pipes.length; i++) {
         const p = pipes[i];
 
-        gameCanvas.drawImage(pipeImg, p.hPos, p.height - 640);
+        gameCanvas.drawImage(pipeImg, p.hPos, p.height - 640); // 640 being the height of the pipe
         gameCanvas.drawImage(pipeImg, p.hPos, p.height + pipeGap);
     }
 
