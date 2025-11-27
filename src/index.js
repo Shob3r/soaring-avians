@@ -47,7 +47,7 @@ const gravity = 2.5;
 let gameTime = 0;
 
 /** 
- * @param {MouseEvent} x Button Event
+ * @param { MouseEvent } x Button Event
  */
 function onBtnUnfocus(x) {
     x.currentTarget.blur();
@@ -166,8 +166,8 @@ function renderGameFrame() {
 
     // Generate a new random pipe
     for (let i = 0; i < pipes.length; i++) {
+        // Improves code readability in the next 2 lines
         const p = pipes[i];
-
         gameCanvas.drawImage(pipeImg, p.hPos, p.height - 640); // 640 being the height of the pipe
         gameCanvas.drawImage(pipeImg, p.hPos, p.height + pipeGap);
     }

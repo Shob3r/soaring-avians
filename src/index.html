@@ -14,8 +14,10 @@
     <div style="flex: auto; flex-direction: column; justify-content: center; text-align: center; margin-bottom: 15px;">
         <h1>Soaring Avians</h1>
         <button onclick="resetData()">Reset Data</button>
-        <h3 id="highScoreTally">High Score: None</h3>
-        <h3 id="currentScoreTally">Score: 0</h3>
+        <div style="display: flex; flex-direction: row; justify-content: center; gap: 25px; text-align: center;">
+            <h3 id="highScoreTally">High Score: None</h3>
+            <h3 id="currentScoreTally">Score: 0</h3>
+        </div>
         <canvas id="gameCanvas" width="1050" height="650"
             style="background-color: oklch(1 0 0 / 5%); margin-bottom: 5px; border-radius: 1.5rem;"></canvas>
         <div>
